@@ -54,8 +54,8 @@ export function Dashboard() {
           </p>
           <p className="mt-1 text-lg text-muted-foreground">days left</p>
         </div>
-        <div className="w-full max-w-sm">
-          <Progress value={semester.percent} className="h-3" />
+        <div className="w-full max-w-2xl">
+          <Progress value={semester.percent} className="h-5" />
           <p className="mt-3 text-sm text-muted-foreground">
             {semester.percent.toFixed(0)}% of the semester complete
           </p>

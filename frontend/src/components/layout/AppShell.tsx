@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
@@ -10,11 +11,42 @@ const NAV_LINKS = [
 ]
 
 export function AppShell() {
+  const { pathname } = useLocation()
+  const isDashboard = pathname === "/dashboard"
+  const [navRevealed, setNavRevealed] = useState(false)
+
+  useEffect(() => {
+    if (!isDashboard) return
+
+    function handleScroll() {
+      setNavRevealed(window.scrollY > 10)
+    }
+
+    handleScroll()
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [isDashboard])
+
+  const navHidden = isDashboard && !navRevealed
+
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b border-border">
-        <nav className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-          <span className="text-lg font-semibold text-foreground">TimesUp</span>
+      <header
+        className={cn(
+          "border-b border-border transition-transform duration-300",
+          isDashboard && "fixed inset-x-0 top-0 z-20 bg-background",
+          navHidden && "-translate-y-full border-transparent"
+        )}
+      >
+        <nav
+          className={cn(
+            "mx-auto flex w-full max-w-5xl flex-wrap items-center gap-4 px-6 py-4",
+            isDashboard ? "justify-center" : "justify-between"
+          )}
+        >
+          {!isDashboard && (
+            <span className="text-lg font-semibold text-foreground">TimesUp</span>
+          )}
           <ul className="flex flex-wrap gap-1">
             {NAV_LINKS.map((link) => (
               <li key={link.to}>
