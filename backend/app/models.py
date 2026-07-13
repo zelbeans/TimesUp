@@ -64,3 +64,5 @@ class SemesterEvent(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     date: Mapped[date_] = mapped_column(Date, nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
+    google_event_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    source: Mapped[str] = mapped_column(String, default="manual")
