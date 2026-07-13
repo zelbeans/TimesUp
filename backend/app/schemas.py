@@ -1,23 +1,30 @@
 from datetime import date as date_, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 
 from app.models import HabitType
 
 
-class TaskCreate(BaseModel):
+class CamelModel(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+
+class ReadModel(CamelModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
+
+
+class TaskCreate(CamelModel):
     title: str
 
 
-class TaskUpdate(BaseModel):
+class TaskUpdate(CamelModel):
     title: str | None = None
     completed: bool | None = None
     completed_at: datetime | None = None
 
 
-class TaskRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class TaskRead(ReadModel):
     id: str
     title: str
     completed: bool
@@ -25,16 +32,14 @@ class TaskRead(BaseModel):
     completed_at: datetime | None = None
 
 
-class PomodoroSessionCreate(BaseModel):
+class PomodoroSessionCreate(CamelModel):
     task_id: str | None = None
     started_at: datetime
     duration_min: int
     completed: bool = True
 
 
-class PomodoroSessionRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class PomodoroSessionRead(ReadModel):
     id: str
     task_id: str | None = None
     started_at: datetime
@@ -42,60 +47,54 @@ class PomodoroSessionRead(BaseModel):
     completed: bool
 
 
-class HabitEntryCreate(BaseModel):
+class HabitEntryCreate(CamelModel):
     type: HabitType
     date: date_
     completed: bool = True
 
 
-class HabitEntryUpdate(BaseModel):
+class HabitEntryUpdate(CamelModel):
     completed: bool | None = None
 
 
-class HabitEntryRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class HabitEntryRead(ReadModel):
     id: str
     type: HabitType
     date: date_
     completed: bool
 
 
-class MoodEntryCreate(BaseModel):
+class MoodEntryCreate(CamelModel):
     date: date_
     score: int = Field(ge=1, le=5)
     note: str | None = None
 
 
-class MoodEntryUpdate(BaseModel):
+class MoodEntryUpdate(CamelModel):
     score: int | None = Field(default=None, ge=1, le=5)
     note: str | None = None
 
 
-class MoodEntryRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class MoodEntryRead(ReadModel):
     id: str
     date: date_
     score: int
     note: str | None = None
 
 
-class SemesterEventCreate(BaseModel):
+class SemesterEventCreate(CamelModel):
     title: str
     date: date_
     description: str | None = None
 
 
-class SemesterEventUpdate(BaseModel):
+class SemesterEventUpdate(CamelModel):
     title: str | None = None
     date: date_ | None = None
     description: str | None = None
 
 
-class SemesterEventRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class SemesterEventRead(ReadModel):
     id: str
     title: str
     date: date_

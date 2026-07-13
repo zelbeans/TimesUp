@@ -1,21 +1,32 @@
-import { useLocalStorage } from "@/hooks/useLocalStorage"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api"
 
-export function useCollection<T extends { id: string }>(key: string) {
-  const [items, setItems] = useLocalStorage<T[]>(key, [])
+export function useCollection<T extends { id: string }>(resource: string) {
+  const [items, setItems] = useState<T[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  function add(item: Omit<T, "id">) {
-    const newItem = { ...item, id: crypto.randomUUID() } as T
-    setItems((prev) => [...prev, newItem])
-    return newItem
+  useEffect(() => {
+    api
+      .get<T[]>(resource)
+      .then((res) => setItems(res.data))
+      .finally(() => setIsLoading(false))
+  }, [resource])
+
+  async function add(item: Omit<T, "id">) {
+    const res = await api.post<T>(resource, item)
+    setItems((prev) => [...prev, res.data])
+    return res.data
   }
 
-  function update(id: string, patch: Partial<T>) {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+  async function update(id: string, patch: Partial<T>) {
+    const res = await api.patch<T>(`${resource}/${id}`, patch)
+    setItems((prev) => prev.map((item) => (item.id === id ? res.data : item)))
   }
 
-  function remove(id: string) {
+  async function remove(id: string) {
+    await api.delete(`${resource}/${id}`)
     setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
-  return { items, add, update, remove }
+  return { items, isLoading, add, update, remove }
 }
