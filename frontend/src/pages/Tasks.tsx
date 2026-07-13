@@ -28,7 +28,7 @@ export function Tasks() {
   function toggleComplete(id: string, completed: boolean) {
     tasks.update(id, {
       completed,
-      completedAt: completed ? new Date().toISOString() : undefined,
+      completedAt: completed ? new Date().toISOString() : null,
     })
   }
 
@@ -68,7 +68,7 @@ export function Tasks() {
                 </Button>
               </li>
             ))}
-            {openTasks.length === 0 && (
+            {!tasks.isLoading && openTasks.length === 0 && (
               <p className="text-sm text-muted-foreground">No open tasks.</p>
             )}
           </ul>

@@ -106,7 +106,9 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             {openTasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No open tasks — nice.</p>
+              <p className="text-sm text-muted-foreground">
+                {tasks.isLoading ? "Loading…" : "No open tasks — nice."}
+              </p>
             ) : (
               <ul className="flex flex-col gap-2">
                 {openTasks.map((task) => (

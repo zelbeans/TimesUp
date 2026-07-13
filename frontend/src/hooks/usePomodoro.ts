@@ -8,7 +8,7 @@ const BREAK_MIN = 5
 export type PomodoroMode = "work" | "break"
 
 export function usePomodoro() {
-  const sessions = useCollection<PomodoroSession>("timesup:pomodoro")
+  const sessions = useCollection<PomodoroSession>("/pomodoro-sessions")
   const [mode, setMode] = useState<PomodoroMode>("work")
   const [secondsLeft, setSecondsLeft] = useState(WORK_MIN * 60)
   const [isRunning, setIsRunning] = useState(false)

@@ -63,7 +63,7 @@ export function Events() {
             ))}
             {sorted.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                No events yet — add something to look forward to.
+                {events.isLoading ? "Loading…" : "No events yet — add something to look forward to."}
               </p>
             )}
           </ul>
