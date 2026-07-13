@@ -99,3 +99,10 @@ class SemesterEventRead(ReadModel):
     title: str
     date: date_
     description: str | None = None
+    google_event_id: str | None = None
+    source: str
+
+
+class GoogleSyncResult(CamelModel):
+    imported: int
+    updated: int

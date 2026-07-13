@@ -1,14 +1,19 @@
 import { useState, type FormEvent } from "react"
+import { isAxiosError } from "axios"
 import { format, parseISO } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useEvents } from "@/hooks/useEvents"
+import { api } from "@/lib/api"
 
 export function Events() {
   const events = useEvents()
   const [title, setTitle] = useState("")
   const [date, setDate] = useState("")
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncMessage, setSyncMessage] = useState<string | null>(null)
+  const [syncError, setSyncError] = useState<string | null>(null)
 
   function handleAdd(e: FormEvent) {
     e.preventDefault()
@@ -16,6 +21,27 @@ export function Events() {
     events.add({ title: title.trim(), date })
     setTitle("")
     setDate("")
+  }
+
+  async function handleSync() {
+    setIsSyncing(true)
+    setSyncError(null)
+    setSyncMessage(null)
+    try {
+      const res = await api.post<{ imported: number; updated: number }>(
+        "/events/sync-google-calendar"
+      )
+      await events.refetch()
+      setSyncMessage(`Imported ${res.data.imported}, updated ${res.data.updated}.`)
+    } catch (err) {
+      const detail =
+        isAxiosError(err) && typeof err.response?.data?.detail === "string"
+          ? err.response.data.detail
+          : "Sync failed — is the backend running?"
+      setSyncError(detail)
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
   const sorted = [...events.items].sort((a, b) => a.date.localeCompare(b.date))
@@ -43,6 +69,20 @@ export function Events() {
             />
             <Button type="submit">Add</Button>
           </form>
+
+          <div className="flex flex-col gap-1 border-t border-border pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="self-start"
+            >
+              {isSyncing ? "Syncing…" : "Sync from Google Calendar"}
+            </Button>
+            {syncMessage && <p className="text-xs text-muted-foreground">{syncMessage}</p>}
+            {syncError && <p className="text-xs text-destructive">{syncError}</p>}
+          </div>
 
           <ul className="flex flex-col gap-2">
             {sorted.map((event) => (

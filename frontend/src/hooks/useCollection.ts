@@ -1,16 +1,23 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { api } from "@/lib/api"
 
 export function useCollection<T extends { id: string }>(resource: string) {
   const [items, setItems] = useState<T[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    api
-      .get<T[]>(resource)
-      .then((res) => setItems(res.data))
-      .finally(() => setIsLoading(false))
+  const fetchItems = useCallback(() => {
+    return api.get<T[]>(resource).then((res) => setItems(res.data))
   }, [resource])
+
+  useEffect(() => {
+    fetchItems().finally(() => setIsLoading(false))
+  }, [fetchItems])
+
+  const refetch = useCallback(async () => {
+    setIsLoading(true)
+    await fetchItems()
+    setIsLoading(false)
+  }, [fetchItems])
 
   async function add(item: Omit<T, "id">) {
     const res = await api.post<T>(resource, item)
@@ -28,5 +35,5 @@ export function useCollection<T extends { id: string }>(resource: string) {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
-  return { items, isLoading, add, update, remove }
+  return { items, isLoading, add, update, remove, refetch }
 }
