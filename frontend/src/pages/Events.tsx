@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar } from "@/components/ui/calendar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { EventsMonthGrid } from "@/components/events/EventsMonthGrid"
 import { useEvents } from "@/hooks/useEvents"
 import { api } from "@/lib/api"
 
@@ -99,64 +101,83 @@ export function Events() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
-        <Card className="w-fit">
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              modifiers={{ hasEvent: eventDates }}
-              modifiersClassNames={{
-                hasEvent:
-                  "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-primary after:content-['']",
-              }}
-            />
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="list">
+        <TabsList>
+          <TabsTrigger value="list">List</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{selectedDate ? format(selectedDate, "EEEE, MMM d") : "All events"}</CardTitle>
-            {selectedDate && (
-              <CardAction>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedDate(undefined)}>
-                  Show all
-                </Button>
-              </CardAction>
-            )}
-          </CardHeader>
-          <CardContent>
-            <ul className="flex flex-col gap-2">
-              {visible.map((event) => (
-                <li
-                  key={event.id}
-                  className="flex items-center gap-3 rounded-md border border-border p-3"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{event.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(parseISO(event.date), "EEEE, MMM d yyyy")}
+        <TabsContent value="list">
+          <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
+            <Card className="w-fit">
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  modifiers={{ hasEvent: eventDates }}
+                  modifiersClassNames={{
+                    hasEvent:
+                      "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-primary after:content-['']",
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {selectedDate ? format(selectedDate, "EEEE, MMM d") : "All events"}
+                </CardTitle>
+                {selectedDate && (
+                  <CardAction>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedDate(undefined)}>
+                      Show all
+                    </Button>
+                  </CardAction>
+                )}
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-col gap-2">
+                  {visible.map((event) => (
+                    <li
+                      key={event.id}
+                      className="flex items-center gap-3 rounded-md border border-border p-3"
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{event.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(parseISO(event.date), "EEEE, MMM d yyyy")}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => events.remove(event.id)}>
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                  {visible.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {events.isLoading
+                        ? "Loading…"
+                        : selectedIso
+                          ? "No events on this day."
+                          : "No events yet — add something to look forward to."}
                     </p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => events.remove(event.id)}>
-                    Remove
-                  </Button>
-                </li>
-              ))}
-              {visible.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {events.isLoading
-                    ? "Loading…"
-                    : selectedIso
-                      ? "No events on this day."
-                      : "No events yet — add something to look forward to."}
-                </p>
-              )}
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+                  )}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <Card>
+            <CardContent>
+              <EventsMonthGrid events={sorted} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
