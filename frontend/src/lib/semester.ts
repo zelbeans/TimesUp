@@ -1,12 +1,12 @@
 import { differenceInCalendarDays, parseISO } from "date-fns"
 
-// Placeholder until the backend exposes a real semester/term record.
+// Default end date until the user sets their own via the dashboard.
 export const SEMESTER_START = "2026-05-01"
-export const SEMESTER_END = "2026-08-15"
+export const DEFAULT_SEMESTER_END = "2026-08-15"
 
-export function getSemesterProgress() {
+export function getSemesterProgress(endDateIso: string) {
   const start = parseISO(SEMESTER_START)
-  const end = parseISO(SEMESTER_END)
+  const end = parseISO(endDateIso)
   const now = new Date()
 
   const totalDays = differenceInCalendarDays(end, start)
