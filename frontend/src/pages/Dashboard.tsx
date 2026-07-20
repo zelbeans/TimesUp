@@ -1,11 +1,15 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Pencil } from "lucide-react"
 import { useMood } from "@/hooks/useMood"
 import { useHabits } from "@/hooks/useHabits"
 import { useTasks } from "@/hooks/useTasks"
-import { getSemesterProgress } from "@/lib/semester"
+import { useLocalStorage } from "@/hooks/useLocalStorage"
+import { DEFAULT_SEMESTER_END, getSemesterProgress } from "@/lib/semester"
 import { calcStreak, todayIso } from "@/lib/streaks"
 import type { HabitType, MoodEntry } from "@/lib/types"
 
@@ -16,9 +20,12 @@ export function Dashboard() {
   const mood = useMood()
   const habits = useHabits()
   const tasks = useTasks()
+  const [semesterEnd, setSemesterEnd] = useLocalStorage("timesup:semesterEnd", DEFAULT_SEMESTER_END)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [draftEnd, setDraftEnd] = useState(semesterEnd)
 
   const today = todayIso()
-  const semester = useMemo(() => getSemesterProgress(), [])
+  const semester = useMemo(() => getSemesterProgress(semesterEnd), [semesterEnd])
   const todaysMood = mood.items.find((entry) => entry.date === today)
 
   const streaks = useMemo(
@@ -42,6 +49,18 @@ export function Dashboard() {
     }
   }
 
+  function openEdit() {
+    setDraftEnd(semesterEnd)
+    setIsEditOpen(true)
+  }
+
+  function saveEdit() {
+    if (draftEnd) {
+      setSemesterEnd(draftEnd)
+    }
+    setIsEditOpen(false)
+  }
+
   return (
     <>
       <section className="-mx-6 -mt-8 flex min-h-svh flex-col items-center justify-center gap-8 px-6 text-center">
@@ -56,11 +75,33 @@ export function Dashboard() {
         </div>
         <div className="w-full max-w-2xl">
           <Progress value={semester.percent} className="h-5" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            {semester.percent.toFixed(0)}% of the semester complete
-          </p>
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <p className="text-sm text-muted-foreground">
+              {semester.percent.toFixed(0)}% of the semester complete
+            </p>
+            <button
+              type="button"
+              onClick={openEdit}
+              aria-label="Change end date"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Pencil className="size-3.5" />
+            </button>
+          </div>
         </div>
       </section>
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set countdown end date</DialogTitle>
+          </DialogHeader>
+          <Input type="date" value={draftEnd} onChange={(e) => setDraftEnd(e.target.value)} />
+          <DialogFooter>
+            <Button onClick={saveEdit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex flex-col gap-6 py-10">
         <Card>
