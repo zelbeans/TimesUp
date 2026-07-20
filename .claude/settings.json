@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Browser__read_page",
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(source .venv/bin/activate)",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__Claude_Browser__read_network_requests",
+      "Bash(git check-ignore *)"
+    ]
+  }
+}
