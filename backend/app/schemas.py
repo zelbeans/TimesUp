@@ -3,8 +3,6 @@ from datetime import date as date_, datetime
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
-from app.models import HabitType
-
 
 class CamelModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
@@ -47,8 +45,24 @@ class PomodoroSessionRead(ReadModel):
     completed: bool
 
 
+class HabitCreate(CamelModel):
+    name: str
+    weekly_target: int = 7
+
+
+class HabitUpdate(CamelModel):
+    name: str | None = None
+    weekly_target: int | None = None
+
+
+class HabitRead(ReadModel):
+    id: str
+    name: str
+    weekly_target: int
+
+
 class HabitEntryCreate(CamelModel):
-    type: HabitType
+    habit_id: str
     date: date_
     completed: bool = True
 
@@ -59,7 +73,7 @@ class HabitEntryUpdate(CamelModel):
 
 class HabitEntryRead(ReadModel):
     id: str
-    type: HabitType
+    habit_id: str
     date: date_
     completed: bool
 

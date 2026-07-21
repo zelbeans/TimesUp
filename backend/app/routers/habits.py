@@ -1,12 +1,12 @@
 from app.crud import make_crud_router
-from app.models import HabitEntry
-from app.schemas import HabitEntryCreate, HabitEntryRead, HabitEntryUpdate
+from app.models import Habit
+from app.schemas import HabitCreate, HabitRead, HabitUpdate
 
 router = make_crud_router(
-    model=HabitEntry,
-    create_schema=HabitEntryCreate,
-    read_schema=HabitEntryRead,
-    update_schema=HabitEntryUpdate,
+    model=Habit,
+    create_schema=HabitCreate,
+    read_schema=HabitRead,
+    update_schema=HabitUpdate,
     prefix="/habits",
     tags=["habits"],
 )
