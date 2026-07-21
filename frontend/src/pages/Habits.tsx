@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Pencil, Trash2 } from "lucide-react"
+import { Minus, Pencil, Plus, Trash2 } from "lucide-react"
 import { useHabits } from "@/hooks/useHabits"
 import { useHabitEntries } from "@/hooks/useHabitEntries"
 import { calcWeeklyCount, todayIso } from "@/lib/streaks"
@@ -52,12 +52,17 @@ export function Habits() {
     setIsDialogOpen(false)
   }
 
-  function toggleToday(habitId: string) {
-    const existing = entries.items.find((e) => e.habitId === habitId && e.date === today)
-    if (existing) {
-      entries.update(existing.id, { completed: !existing.completed })
-    } else {
-      entries.add({ habitId, date: today, completed: true })
+  function incrementToday(habitId: string) {
+    entries.add({ habitId, date: today, completed: true })
+  }
+
+  function decrementToday(habitId: string) {
+    const todayEntries = entries.items.filter(
+      (e) => e.habitId === habitId && e.date === today && e.completed
+    )
+    const last = todayEntries[todayEntries.length - 1]
+    if (last) {
+      entries.remove(last.id)
     }
   }
 
@@ -75,10 +80,9 @@ export function Habits() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {habits.items.map((habit) => {
-              const todayEntry = entries.items.find(
-                (e) => e.habitId === habit.id && e.date === today
-              )
-              const done = todayEntry?.completed ?? false
+              const todayCount = entries.items.filter(
+                (e) => e.habitId === habit.id && e.date === today && e.completed
+              ).length
               const weekCount = calcWeeklyCount(
                 entries.items
                   .filter((e) => e.habitId === habit.id && e.completed)
@@ -122,13 +126,26 @@ export function Habits() {
                     </p>
                   </div>
 
-                  <Button
-                    variant={done ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => toggleToday(habit.id)}
-                  >
-                    {done ? "Done today" : "Mark done"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() => decrementToday(habit.id)}
+                      disabled={todayCount === 0}
+                      aria-label={`Remove one ${habit.name} completion today`}
+                    >
+                      <Minus className="size-3.5" />
+                    </Button>
+                    <span className="text-sm tabular-nums">{todayCount} today</span>
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() => incrementToday(habit.id)}
+                      aria-label={`Add one ${habit.name} completion today`}
+                    >
+                      <Plus className="size-3.5" />
+                    </Button>
+                  </div>
                 </div>
               )
             })}
