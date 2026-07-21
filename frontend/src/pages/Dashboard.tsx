@@ -7,18 +7,19 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Pencil } from "lucide-react"
 import { useMood } from "@/hooks/useMood"
 import { useHabits } from "@/hooks/useHabits"
+import { useHabitEntries } from "@/hooks/useHabitEntries"
 import { useTasks } from "@/hooks/useTasks"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import { DEFAULT_SEMESTER_END, getSemesterProgress } from "@/lib/semester"
-import { calcStreak, todayIso } from "@/lib/streaks"
-import type { HabitType, MoodEntry } from "@/lib/types"
+import { calcWeeklyCount, todayIso } from "@/lib/streaks"
+import type { MoodEntry } from "@/lib/types"
 
-const HABIT_TYPES: HabitType[] = ["gym", "walk", "sleep", "meal"]
 const MOOD_SCORES: MoodEntry["score"][] = [1, 2, 3, 4, 5]
 
 export function Dashboard() {
   const mood = useMood()
   const habits = useHabits()
+  const habitEntries = useHabitEntries()
   const tasks = useTasks()
   const [semesterEnd, setSemesterEnd] = useLocalStorage("timesup:semesterEnd", DEFAULT_SEMESTER_END)
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -28,15 +29,17 @@ export function Dashboard() {
   const semester = useMemo(() => getSemesterProgress(semesterEnd), [semesterEnd])
   const todaysMood = mood.items.find((entry) => entry.date === today)
 
-  const streaks = useMemo(
+  const weeklyProgress = useMemo(
     () =>
-      HABIT_TYPES.map((type) => ({
-        type,
-        streak: calcStreak(
-          habits.items.filter((h) => h.type === type && h.completed).map((h) => h.date)
+      habits.items.map((habit) => ({
+        habit,
+        count: calcWeeklyCount(
+          habitEntries.items
+            .filter((e) => e.habitId === habit.id && e.completed)
+            .map((e) => e.date)
         ),
       })),
-    [habits.items]
+    [habits.items, habitEntries.items]
   )
 
   const openTasks = tasks.items.filter((t) => !t.completed).slice(0, 5)
@@ -125,16 +128,18 @@ export function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Habit Streaks</CardTitle>
+            <CardTitle>This Week</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {streaks.map(({ type, streak }) => (
+            {weeklyProgress.map(({ habit, count }) => (
               <div
-                key={type}
+                key={habit.id}
                 className="flex flex-col items-center gap-1 rounded-lg border border-border p-3"
               >
-                <span className="text-2xl font-semibold">{streak}</span>
-                <span className="text-xs text-muted-foreground capitalize">{type}</span>
+                <span className="text-2xl font-semibold">
+                  {count}/{habit.weeklyTarget}
+                </span>
+                <span className="text-xs text-muted-foreground">{habit.name}</span>
               </div>
             ))}
           </CardContent>

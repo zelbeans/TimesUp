@@ -14,11 +14,15 @@ export interface PomodoroSession {
   completed: boolean
 }
 
-export type HabitType = "gym" | "walk" | "sleep" | "meal"
+export interface Habit {
+  id: string
+  name: string
+  weeklyTarget: number
+}
 
 export interface HabitEntry {
   id: string
-  type: HabitType
+  habitId: string
   date: string
   completed: boolean
 }
