@@ -76,9 +76,7 @@ export function Dashboard() {
         <div className="w-full max-w-2xl">
           <Progress value={semester.percent} className="h-5" />
           <div className="mt-3 flex items-center justify-center gap-2">
-            <p className="text-sm text-muted-foreground">
-              {semester.percent.toFixed(0)}% of the semester complete
-            </p>
+            <p className="text-sm text-muted-foreground">{semester.percent.toFixed(0)}% done</p>
             <button
               type="button"
               onClick={openEdit}
