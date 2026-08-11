@@ -1,8 +1,7 @@
-import enum
 import uuid
 from datetime import date as date_, datetime
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Date, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -10,13 +9,6 @@ from app.database import Base
 
 def _uuid() -> str:
     return str(uuid.uuid4())
-
-
-class HabitType(str, enum.Enum):
-    gym = "gym"
-    walk = "walk"
-    sleep = "sleep"
-    meal = "meal"
 
 
 class Task(Base):
@@ -39,11 +31,19 @@ class PomodoroSession(Base):
     completed: Mapped[bool] = mapped_column(default=False)
 
 
+class Habit(Base):
+    __tablename__ = "habits"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    weekly_target: Mapped[int] = mapped_column(default=7)
+
+
 class HabitEntry(Base):
     __tablename__ = "habit_entries"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
-    type: Mapped[HabitType] = mapped_column(Enum(HabitType), nullable=False)
+    habit_id: Mapped[str] = mapped_column(ForeignKey("habits.id"), nullable=False)
     date: Mapped[date_] = mapped_column(Date, nullable=False)
     completed: Mapped[bool] = mapped_column(default=False)
 
