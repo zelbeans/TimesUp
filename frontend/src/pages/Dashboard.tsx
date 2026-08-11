@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Pencil } from "lucide-react"
 import { useMood } from "@/hooks/useMood"
@@ -15,14 +16,20 @@ import type { HabitType, MoodEntry } from "@/lib/types"
 
 const HABIT_TYPES: HabitType[] = ["gym", "walk", "sleep", "meal"]
 const MOOD_SCORES: MoodEntry["score"][] = [1, 2, 3, 4, 5]
+const DEFAULT_SEMESTER_LABEL = "done"
 
 export function Dashboard() {
   const mood = useMood()
   const habits = useHabits()
   const tasks = useTasks()
   const [semesterEnd, setSemesterEnd] = useLocalStorage("timesup:semesterEnd", DEFAULT_SEMESTER_END)
+  const [semesterLabel, setSemesterLabel] = useLocalStorage(
+    "timesup:semesterLabel",
+    DEFAULT_SEMESTER_LABEL
+  )
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [draftEnd, setDraftEnd] = useState(semesterEnd)
+  const [draftLabel, setDraftLabel] = useState(semesterLabel)
 
   const today = todayIso()
   const semester = useMemo(() => getSemesterProgress(semesterEnd), [semesterEnd])
@@ -51,6 +58,7 @@ export function Dashboard() {
 
   function openEdit() {
     setDraftEnd(semesterEnd)
+    setDraftLabel(semesterLabel)
     setIsEditOpen(true)
   }
 
@@ -58,6 +66,7 @@ export function Dashboard() {
     if (draftEnd) {
       setSemesterEnd(draftEnd)
     }
+    setSemesterLabel(draftLabel.trim() || DEFAULT_SEMESTER_LABEL)
     setIsEditOpen(false)
   }
 
@@ -76,7 +85,9 @@ export function Dashboard() {
         <div className="w-full max-w-2xl">
           <Progress value={semester.percent} className="h-5" />
           <div className="mt-3 flex items-center justify-center gap-2">
-            <p className="text-sm text-muted-foreground">{semester.percent.toFixed(0)}% done</p>
+            <p className="text-sm text-muted-foreground">
+              {semester.percent.toFixed(0)}% {semesterLabel}
+            </p>
             <button
               type="button"
               onClick={openEdit}
@@ -92,9 +103,28 @@ export function Dashboard() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set countdown end date</DialogTitle>
+            <DialogTitle>Edit countdown</DialogTitle>
           </DialogHeader>
-          <Input type="date" value={draftEnd} onChange={(e) => setDraftEnd(e.target.value)} />
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="semester-end">End date</Label>
+              <Input
+                id="semester-end"
+                type="date"
+                value={draftEnd}
+                onChange={(e) => setDraftEnd(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="semester-label">Label</Label>
+              <Input
+                id="semester-label"
+                value={draftLabel}
+                onChange={(e) => setDraftLabel(e.target.value)}
+                placeholder={DEFAULT_SEMESTER_LABEL}
+              />
+            </div>
+          </div>
           <DialogFooter>
             <Button onClick={saveEdit}>Save</Button>
           </DialogFooter>
